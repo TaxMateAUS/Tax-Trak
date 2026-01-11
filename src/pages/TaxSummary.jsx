@@ -98,7 +98,7 @@ export default function TaxSummary() {
 
     report += `\n${'='.repeat(50)}\n\n`;
     report += `DETAILED EXPENSES\n`;
-    report += `-`.repeat(30) + '\n`;
+    report += `-`.repeat(30) + '\n';
 
     deductibleExpenses.forEach(e => {
       report += `${e.date} | ${e.vendor} | ${CATEGORY_LABELS[e.category] || e.category} | $${e.amount?.toFixed(2)}\n`;
