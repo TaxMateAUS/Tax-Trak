@@ -10,7 +10,8 @@ import {
   Menu, 
   X,
   LogOut,
-  ScanLine
+  ScanLine,
+  Car
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ const navigation = [
   { name: 'Dashboard', href: 'Dashboard', icon: LayoutDashboard },
   { name: 'Scan Receipt', href: 'ScanReceipt', icon: ScanLine },
   { name: 'Expenses', href: 'Expenses', icon: Receipt },
+  { name: 'Vehicle & Mileage', href: 'VehicleTracking', icon: Car },
   { name: 'Tax Summary', href: 'TaxSummary', icon: PieChart },
 ];
 
