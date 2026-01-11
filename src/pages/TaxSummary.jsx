@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Download, FileText, TrendingUp, DollarSign, Calendar } from 'lucide-react';
+import { Download, FileText, TrendingUp, DollarSign, Calendar, FileJson } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,6 +114,51 @@ export default function TaxSummary() {
     toast.success('Report generated successfully');
   };
 
+  const generateJSONReport = () => {
+    const jsonData = {
+      taxYear: parseInt(selectedYear),
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalExpenses: parseFloat(totalExpenses.toFixed(2)),
+        totalDeductible: parseFloat(totalDeductible.toFixed(2)),
+        transactionCount: yearExpenses.length,
+        deductibleCount: deductibleExpenses.length
+      },
+      categoryBreakdown: sortedCategories.map(([cat, data]) => ({
+        category: cat,
+        categoryLabel: CATEGORY_LABELS[cat] || cat,
+        amount: parseFloat(data.amount.toFixed(2)),
+        count: data.count,
+        percentage: parseFloat(((data.amount / totalDeductible) * 100).toFixed(2))
+      })),
+      monthlyBreakdown: monthlyData.map(m => ({
+        month: m.month,
+        amount: parseFloat(m.amount.toFixed(2))
+      })),
+      expenses: deductibleExpenses.map(e => ({
+        id: e.id,
+        date: e.date,
+        vendor: e.vendor,
+        category: e.category,
+        categoryLabel: CATEGORY_LABELS[e.category] || e.category,
+        amount: e.amount,
+        notes: e.notes || '',
+        receiptUrl: e.receipt_url || '',
+        isDeductible: e.is_deductible !== false
+      }))
+    };
+
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tax-summary-${selectedYear}.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success('JSON report exported successfully');
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -147,9 +192,13 @@ export default function TaxSummary() {
               <SelectItem value="2026">2026</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={generateReport} className="bg-slate-900 hover:bg-slate-800">
+          <Button variant="outline" onClick={generateReport}>
             <FileText className="w-4 h-4 mr-2" />
-            Generate Report
+            Text Report
+          </Button>
+          <Button onClick={generateJSONReport} className="bg-slate-900 hover:bg-slate-800">
+            <FileJson className="w-4 h-4 mr-2" />
+            JSON Report
           </Button>
         </div>
       </div>

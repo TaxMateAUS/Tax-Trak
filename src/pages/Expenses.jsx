@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Search, Filter, Download } from 'lucide-react';
+import { Plus, Search, Filter, Download, FileJson } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -120,6 +120,38 @@ export default function Expenses() {
     toast.success('Expenses exported successfully');
   };
 
+  const handleExportJSON = () => {
+    const jsonData = {
+      exportDate: new Date().toISOString(),
+      taxYear: yearFilter,
+      totalExpenses: filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0),
+      totalDeductible: filteredExpenses.filter(e => e.is_deductible !== false).reduce((sum, e) => sum + (e.amount || 0), 0),
+      expenses: filteredExpenses.map(e => ({
+        id: e.id,
+        date: e.date,
+        vendor: e.vendor,
+        category: e.category,
+        amount: e.amount,
+        taxYear: e.tax_year,
+        isDeductible: e.is_deductible !== false,
+        notes: e.notes || '',
+        receiptUrl: e.receipt_url || '',
+        createdDate: e.created_date,
+        updatedDate: e.updated_date
+      }))
+    };
+
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `expenses-${yearFilter}.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success('JSON file exported successfully');
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -131,7 +163,11 @@ export default function Expenses() {
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleExport}>
             <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            CSV
+          </Button>
+          <Button variant="outline" onClick={handleExportJSON}>
+            <FileJson className="w-4 h-4 mr-2" />
+            JSON
           </Button>
           <Button 
             className="bg-slate-900 hover:bg-slate-800"
