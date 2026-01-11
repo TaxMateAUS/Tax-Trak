@@ -9,8 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Save, X } from 'lucide-react';
 
-const DEFAULT_RATE = 0.68; // Standard rate per km
-
 const CATEGORIES = [
   { value: "business", label: "Business" },
   { value: "medical", label: "Medical" },
@@ -26,10 +24,11 @@ export default function TripForm({ initialData, onSave, onCancel, isSaving }) {
     vehicle_name: '',
     start_location: '',
     end_location: '',
+    start_odometer: '',
+    end_odometer: '',
     purpose: '',
     distance_km: '',
     category: 'business',
-    rate_per_km: DEFAULT_RATE,
     tax_year: new Date().getFullYear(),
     notes: '',
     is_deductible: true,
@@ -46,28 +45,42 @@ export default function TripForm({ initialData, onSave, onCancel, isSaving }) {
       setFormData(prev => ({
         ...prev,
         ...initialData,
-        distance_km: initialData.distance_km?.toString() || '',
-        rate_per_km: initialData.rate_per_km?.toString() || DEFAULT_RATE.toString()
+        start_odometer: initialData.start_odometer?.toString() || '',
+        end_odometer: initialData.end_odometer?.toString() || '',
+        distance_km: initialData.distance_km?.toString() || ''
       }));
     }
   }, [initialData]);
 
-  const calculateTotal = () => {
+  useEffect(() => {
+    // Auto-calculate distance when odometer readings change
+    if (formData.start_odometer && formData.end_odometer) {
+      const start = parseFloat(formData.start_odometer);
+      const end = parseFloat(formData.end_odometer);
+      if (!isNaN(start) && !isNaN(end) && end > start) {
+        const distance = end - start;
+        setFormData(prev => ({ ...prev, distance_km: distance.toString() }));
+      }
+    }
+  }, [formData.start_odometer, formData.end_odometer]);
+
+  const calculateDistance = () => {
     const distance = parseFloat(formData.distance_km) || 0;
-    const rate = parseFloat(formData.rate_per_km) || 0;
-    return (distance * rate).toFixed(2);
+    return distance.toFixed(1);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const distance = parseFloat(formData.distance_km) || 0;
-    const rate = parseFloat(formData.rate_per_km) || 0;
+    const startOdo = parseFloat(formData.start_odometer) || undefined;
+    const endOdo = parseFloat(formData.end_odometer) || undefined;
     
     onSave({
       ...formData,
+      start_odometer: startOdo,
+      end_odometer: endOdo,
       distance_km: distance,
-      rate_per_km: rate,
-      total_amount: distance * rate,
+      total_amount: 0,
       tax_year: parseInt(formData.tax_year) || new Date().getFullYear()
     });
   };
@@ -136,6 +149,30 @@ export default function TripForm({ initialData, onSave, onCancel, isSaving }) {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="start_odometer">Start Odometer (km)</Label>
+          <Input
+            id="start_odometer"
+            type="number"
+            step="0.1"
+            value={formData.start_odometer}
+            onChange={(e) => setFormData({ ...formData, start_odometer: e.target.value })}
+            placeholder="e.g., 74544"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="end_odometer">End Odometer (km)</Label>
+          <Input
+            id="end_odometer"
+            type="number"
+            step="0.1"
+            value={formData.end_odometer}
+            onChange={(e) => setFormData({ ...formData, end_odometer: e.target.value })}
+            placeholder="e.g., 74550"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="distance_km">Distance (km)</Label>
           <Input
             id="distance_km"
@@ -143,19 +180,7 @@ export default function TripForm({ initialData, onSave, onCancel, isSaving }) {
             step="0.1"
             value={formData.distance_km}
             onChange={(e) => setFormData({ ...formData, distance_km: e.target.value })}
-            placeholder="0.0"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="rate_per_km">Rate per km ($)</Label>
-          <Input
-            id="rate_per_km"
-            type="number"
-            step="0.01"
-            value={formData.rate_per_km}
-            onChange={(e) => setFormData({ ...formData, rate_per_km: e.target.value })}
+            placeholder="Auto-calculated or enter manually"
           />
         </div>
 
@@ -228,8 +253,8 @@ export default function TripForm({ initialData, onSave, onCancel, isSaving }) {
         />
         <Label htmlFor="is_deductible" className="cursor-pointer">Tax Deductible</Label>
         <div className="ml-auto text-right">
-          <p className="text-sm text-slate-500">Estimated Claim</p>
-          <p className="text-xl font-bold text-slate-900">${calculateTotal()}</p>
+          <p className="text-sm text-slate-500">Total Distance</p>
+          <p className="text-xl font-bold text-slate-900">{calculateDistance()} km</p>
         </div>
       </div>
 

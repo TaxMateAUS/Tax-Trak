@@ -75,9 +75,8 @@ export default function VehicleTracking() {
 
   const yearTrips = trips.filter(t => t.tax_year?.toString() === yearFilter || (!t.tax_year && yearFilter === new Date().getFullYear().toString()));
   const totalDistance = yearTrips.reduce((sum, t) => sum + (t.distance_km || 0), 0);
-  const totalAmount = yearTrips.reduce((sum, t) => sum + (t.total_amount || 0), 0);
   const deductibleTrips = yearTrips.filter(t => t.is_deductible !== false);
-  const totalDeductible = deductibleTrips.reduce((sum, t) => sum + (t.total_amount || 0), 0);
+  const totalDeductibleDistance = deductibleTrips.reduce((sum, t) => sum + (t.distance_km || 0), 0);
 
   const handleEdit = (trip) => {
     setEditingTrip(trip);
@@ -100,16 +99,16 @@ export default function VehicleTracking() {
 
   const handleExport = () => {
     const csvContent = [
-      ['Date', 'From', 'To', 'Purpose', 'Category', 'Distance (km)', 'Rate', 'Amount', 'Deductible'].join(','),
+      ['Date', 'From', 'To', 'Start Odometer', 'End Odometer', 'Purpose', 'Category', 'Distance (km)', 'Deductible'].join(','),
       ...filteredTrips.map(t => [
         t.date,
         `"${t.start_location || ''}"`,
         `"${t.end_location || ''}"`,
+        t.start_odometer || '',
+        t.end_odometer || '',
         `"${t.purpose}"`,
         t.category,
         t.distance_km,
-        t.rate_per_km,
-        t.total_amount,
         t.is_deductible !== false ? 'Yes' : 'No'
       ].join(','))
     ].join('\n');
@@ -169,16 +168,16 @@ export default function VehicleTracking() {
           icon={Navigation}
         />
         <StatsCard
-          title="Total Claims"
-          value={`$${totalAmount.toFixed(2)}`}
-          subtitle={`Year ${yearFilter}`}
-          icon={Car}
-        />
-        <StatsCard
-          title="Tax Deductible"
-          value={`$${totalDeductible.toFixed(2)}`}
+          title="Deductible Distance"
+          value={`${totalDeductibleDistance.toFixed(1)} km`}
           subtitle={`${deductibleTrips.length} deductible trips`}
           icon={TrendingUp}
+        />
+        <StatsCard
+          title="Average Trip"
+          value={`${yearTrips.length > 0 ? (totalDistance / yearTrips.length).toFixed(1) : '0'} km`}
+          subtitle={`Per trip`}
+          icon={Car}
         />
       </div>
 
@@ -234,9 +233,9 @@ export default function VehicleTracking() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Deductible Amount</p>
+              <p className="text-sm text-slate-500">Deductible Distance</p>
               <p className="text-xl font-bold text-emerald-600">
-                ${filteredTrips.filter(t => t.is_deductible !== false).reduce((sum, t) => sum + (t.total_amount || 0), 0).toFixed(2)}
+                {filteredTrips.filter(t => t.is_deductible !== false).reduce((sum, t) => sum + (t.distance_km || 0), 0).toFixed(1)} km
               </p>
             </div>
             <div>

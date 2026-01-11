@@ -33,8 +33,8 @@ export default function TripTable({ trips, onEdit, onDelete }) {
             <TableHead className="font-semibold">Route</TableHead>
             <TableHead className="font-semibold">Purpose</TableHead>
             <TableHead className="font-semibold">Category</TableHead>
+            <TableHead className="font-semibold text-right">Odometer</TableHead>
             <TableHead className="font-semibold text-right">Distance</TableHead>
-            <TableHead className="font-semibold text-right">Amount</TableHead>
             <TableHead className="w-12"></TableHead>
           </TableRow>
         </TableHeader>
@@ -72,11 +72,18 @@ export default function TripTable({ trips, onEdit, onDelete }) {
                   {trip.category}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right font-medium text-slate-900">
-                {trip.distance_km?.toFixed(1)} km
+              <TableCell className="text-right text-sm text-slate-600">
+                {trip.start_odometer && trip.end_odometer ? (
+                  <div>
+                    <div>{trip.start_odometer.toFixed(0)}</div>
+                    <div className="text-slate-400">→ {trip.end_odometer.toFixed(0)}</div>
+                  </div>
+                ) : (
+                  <span className="text-slate-400">—</span>
+                )}
               </TableCell>
               <TableCell className="text-right font-semibold text-slate-900">
-                ${trip.total_amount?.toFixed(2)}
+                {trip.distance_km?.toFixed(1)} km
               </TableCell>
               <TableCell>
                 <DropdownMenu>
