@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
+import SubscriptionCheck from './components/SubscriptionCheck';
 
 const navigation = [
   { name: 'Dashboard', href: 'Dashboard', icon: LayoutDashboard },
@@ -31,7 +32,10 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
-  return (
+  // Skip subscription check for the subscription page itself
+  const isSubscriptionPage = currentPageName === 'Subscription';
+
+  const content = (
     <div className="min-h-screen bg-slate-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
@@ -125,4 +129,10 @@ export default function Layout({ children, currentPageName }) {
       </div>
     </div>
   );
+
+  if (isSubscriptionPage) {
+    return content;
+  }
+
+  return <SubscriptionCheck>{content}</SubscriptionCheck>;
 }
