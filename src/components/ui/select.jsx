@@ -5,8 +5,46 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { MobileSelect } from "./mobile-select"
 
-const Select = SelectPrimitive.Root
+const Select = React.forwardRef(({ children, value, onValueChange, ...props }, ref) => {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const trigger = React.Children.toArray(children).find(
+    child => React.isValidElement(child) && child.type === SelectTrigger
+  );
+
+  const content = React.Children.toArray(children).find(
+    child => React.isValidElement(child) && child.type === SelectContent
+  );
+
+  if (isMobile && content) {
+    return (
+      <MobileSelect
+        value={value}
+        onValueChange={onValueChange}
+        trigger={<SelectPrimitive.Root value={value} onValueChange={onValueChange} {...props}>{trigger}</SelectPrimitive.Root>}
+        placeholder={trigger?.props?.placeholder}
+      >
+        {content.props.children}
+      </MobileSelect>
+    );
+  }
+
+  return (
+    <SelectPrimitive.Root ref={ref} value={value} onValueChange={onValueChange} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  );
+});
+Select.displayName = "Select"
 
 const SelectGroup = SelectPrimitive.Group
 

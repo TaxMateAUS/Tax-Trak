@@ -45,6 +45,19 @@ export default function Expenses() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Expense.create(data),
+    onMutate: async (newExpense) => {
+      await queryClient.cancelQueries(['expenses']);
+      const previousExpenses = queryClient.getQueryData(['expenses']);
+      queryClient.setQueryData(['expenses'], (old = []) => [
+        { ...newExpense, id: 'temp-' + Date.now(), created_date: new Date().toISOString() },
+        ...old
+      ]);
+      return { previousExpenses };
+    },
+    onError: (err, newExpense, context) => {
+      queryClient.setQueryData(['expenses'], context.previousExpenses);
+      toast.error('Failed to add expense');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['expenses']);
       setIsFormOpen(false);
@@ -54,6 +67,18 @@ export default function Expenses() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Expense.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries(['expenses']);
+      const previousExpenses = queryClient.getQueryData(['expenses']);
+      queryClient.setQueryData(['expenses'], (old = []) =>
+        old.map(expense => expense.id === id ? { ...expense, ...data } : expense)
+      );
+      return { previousExpenses };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['expenses'], context.previousExpenses);
+      toast.error('Failed to update expense');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['expenses']);
       setIsFormOpen(false);
@@ -64,6 +89,18 @@ export default function Expenses() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Expense.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries(['expenses']);
+      const previousExpenses = queryClient.getQueryData(['expenses']);
+      queryClient.setQueryData(['expenses'], (old = []) => 
+        old.filter(expense => expense.id !== id)
+      );
+      return { previousExpenses };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(['expenses'], context.previousExpenses);
+      toast.error('Failed to delete expense');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['expenses']);
       toast.success('Expense deleted');

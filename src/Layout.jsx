@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Receipt, 
@@ -178,7 +179,17 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Page content */}
         <main className="p-6 lg:p-8 pb-24 lg:pb-8">
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPageName}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
         
         {/* Bottom Tabs - Mobile Only */}

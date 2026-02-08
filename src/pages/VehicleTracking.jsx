@@ -40,6 +40,19 @@ export default function VehicleTracking() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Trip.create(data),
+    onMutate: async (newTrip) => {
+      await queryClient.cancelQueries(['trips']);
+      const previousTrips = queryClient.getQueryData(['trips']);
+      queryClient.setQueryData(['trips'], (old = []) => [
+        { ...newTrip, id: 'temp-' + Date.now(), created_date: new Date().toISOString() },
+        ...old
+      ]);
+      return { previousTrips };
+    },
+    onError: (err, newTrip, context) => {
+      queryClient.setQueryData(['trips'], context.previousTrips);
+      toast.error('Failed to add trip');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['trips']);
       setIsFormOpen(false);
@@ -49,6 +62,18 @@ export default function VehicleTracking() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Trip.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries(['trips']);
+      const previousTrips = queryClient.getQueryData(['trips']);
+      queryClient.setQueryData(['trips'], (old = []) =>
+        old.map(trip => trip.id === id ? { ...trip, ...data } : trip)
+      );
+      return { previousTrips };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['trips'], context.previousTrips);
+      toast.error('Failed to update trip');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['trips']);
       setIsFormOpen(false);
@@ -59,6 +84,18 @@ export default function VehicleTracking() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Trip.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries(['trips']);
+      const previousTrips = queryClient.getQueryData(['trips']);
+      queryClient.setQueryData(['trips'], (old = []) => 
+        old.filter(trip => trip.id !== id)
+      );
+      return { previousTrips };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(['trips'], context.previousTrips);
+      toast.error('Failed to delete trip');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['trips']);
       toast.success('Trip deleted');
