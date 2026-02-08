@@ -24,6 +24,18 @@ export default function DiaryEntries() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.DiaryEntry.create(data),
+    onMutate: async (newEntry) => {
+      await queryClient.cancelQueries({ queryKey: ['diary-entries'] });
+      const previousEntries = queryClient.getQueryData(['diary-entries']);
+      queryClient.setQueryData(['diary-entries'], (old = []) => [
+        { ...newEntry, id: 'temp-' + Date.now(), created_date: new Date().toISOString() },
+        ...old
+      ]);
+      return { previousEntries };
+    },
+    onError: (err, newEntry, context) => {
+      queryClient.setQueryData(['diary-entries'], context.previousEntries);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diary-entries'] });
       setShowForm(false);
@@ -33,6 +45,17 @@ export default function DiaryEntries() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.DiaryEntry.update(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['diary-entries'] });
+      const previousEntries = queryClient.getQueryData(['diary-entries']);
+      queryClient.setQueryData(['diary-entries'], (old = []) =>
+        old.map(entry => entry.id === id ? { ...entry, ...data } : entry)
+      );
+      return { previousEntries };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['diary-entries'], context.previousEntries);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diary-entries'] });
       setShowForm(false);
@@ -42,6 +65,17 @@ export default function DiaryEntries() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.DiaryEntry.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['diary-entries'] });
+      const previousEntries = queryClient.getQueryData(['diary-entries']);
+      queryClient.setQueryData(['diary-entries'], (old = []) => 
+        old.filter(entry => entry.id !== id)
+      );
+      return { previousEntries };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(['diary-entries'], context.previousEntries);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diary-entries'] });
     }
