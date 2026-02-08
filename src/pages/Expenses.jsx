@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import ExpenseTable from '../components/expenses/ExpenseTable';
 import ExpenseForm from '../components/receipts/ExpenseForm';
+import PullToRefresh from '../components/mobile/PullToRefresh';
 import { toast } from 'sonner';
 
 const CATEGORIES = [
@@ -151,14 +152,20 @@ export default function Expenses() {
     window.URL.revokeObjectURL(url);
     toast.success('JSON file exported successfully');
   };
+  
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries(['expenses']);
+    toast.success('Expenses refreshed');
+  };
 
   return (
-    <div className="space-y-8">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Expenses</h1>
-          <p className="text-slate-500 mt-2">Manage and track all your expenses</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Expenses</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Manage and track all your expenses</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleExport}>
@@ -170,7 +177,7 @@ export default function Expenses() {
             JSON
           </Button>
           <Button 
-            className="bg-slate-900 hover:bg-slate-800"
+            className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
             onClick={() => { setEditingExpense(null); setIsFormOpen(true); }}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -215,22 +222,22 @@ export default function Expenses() {
       </div>
 
       {/* Summary Bar */}
-      <div className="bg-slate-50 rounded-xl p-4 flex flex-wrap gap-6">
+      <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 flex flex-wrap gap-6">
         <div>
-          <p className="text-sm text-slate-500">Total Expenses</p>
-          <p className="text-xl font-bold text-slate-900">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total Expenses</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">
             ${filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0).toFixed(2)}
           </p>
         </div>
         <div>
-          <p className="text-sm text-slate-500">Deductible</p>
-          <p className="text-xl font-bold text-emerald-600">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Deductible</p>
+          <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
             ${filteredExpenses.filter(e => e.is_deductible !== false).reduce((sum, e) => sum + (e.amount || 0), 0).toFixed(2)}
           </p>
         </div>
         <div>
-          <p className="text-sm text-slate-500">Count</p>
-          <p className="text-xl font-bold text-slate-900">{filteredExpenses.length}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Count</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{filteredExpenses.length}</p>
         </div>
       </div>
 
@@ -251,7 +258,7 @@ export default function Expenses() {
 
       {/* Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto safe-bottom">
           <DialogHeader>
             <DialogTitle>
               {editingExpense ? 'Edit Expense' : 'Add New Expense'}
@@ -265,6 +272,7 @@ export default function Expenses() {
           />
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
