@@ -12,6 +12,7 @@ import TripForm from '../components/vehicle/TripForm';
 import TripTable from '../components/vehicle/TripTable';
 import VehicleManager from '../components/vehicle/VehicleManager';
 import StatsCard from '../components/dashboard/StatsCard';
+import PullToRefresh from '../components/mobile/PullToRefresh';
 import { toast } from 'sonner';
 
 const CATEGORIES = [
@@ -122,6 +123,11 @@ export default function VehicleTracking() {
     window.URL.revokeObjectURL(url);
     toast.success('Trips exported successfully');
   };
+  
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries(['trips']);
+    toast.success('Trips refreshed');
+  };
 
   if (isLoading) {
     return (
@@ -137,7 +143,8 @@ export default function VehicleTracking() {
   }
 
   return (
-    <div className="space-y-8">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -259,7 +266,7 @@ export default function VehicleTracking() {
 
       {/* Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto safe-bottom">
           <DialogHeader>
             <DialogTitle>
               {editingTrip ? 'Edit Trip' : 'Add New Trip'}
@@ -273,6 +280,7 @@ export default function VehicleTracking() {
           />
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
