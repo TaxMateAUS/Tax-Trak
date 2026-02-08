@@ -22,6 +22,7 @@ const navigation = [
   { name: 'Scan Receipt', href: 'ScanReceipt', icon: ScanLine },
   { name: 'Expenses', href: 'Expenses', icon: Receipt },
   { name: 'Vehicle & Mileage', href: 'VehicleTracking', icon: Car },
+  { name: 'Deduction Diary', href: 'DiaryEntries', icon: FileText },
   { name: 'Tax Summary', href: 'TaxSummary', icon: PieChart },
 ];
 
