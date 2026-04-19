@@ -14,7 +14,8 @@ import {
   ScanLine,
   Car,
   ArrowLeft,
-  Trash2
+  Trash2,
+  FileBadge
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
@@ -38,9 +39,10 @@ const navigation = [
   { name: 'Vehicle & Mileage', href: 'VehicleTracking', icon: Car },
   { name: 'Deduction Diary', href: 'DiaryEntries', icon: FileText },
   { name: 'Tax Summary', href: 'TaxSummary', icon: PieChart },
+  { name: 'Tax Reports', href: 'TaxReports', icon: FileBadge },
 ];
 
-const childPages = ['Expenses', 'VehicleTracking', 'DiaryEntries', 'TaxSummary', 'ScanReceipt'];
+const childPages = ['Expenses', 'VehicleTracking', 'DiaryEntries', 'TaxSummary', 'ScanReceipt', 'TaxReports'];
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

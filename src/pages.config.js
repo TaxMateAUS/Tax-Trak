@@ -54,6 +54,7 @@ import Subscription from './pages/Subscription';
 import TaxSummary from './pages/TaxSummary';
 import VehicleTracking from './pages/VehicleTracking';
 import DiaryEntries from './pages/DiaryEntries';
+import TaxReports from './pages/TaxReports';
 import __Layout from './Layout.jsx';
 
 
@@ -65,6 +66,7 @@ export const PAGES = {
     "TaxSummary": TaxSummary,
     "VehicleTracking": VehicleTracking,
     "DiaryEntries": DiaryEntries,
+    "TaxReports": TaxReports,
 }
 
 export const pagesConfig = {
