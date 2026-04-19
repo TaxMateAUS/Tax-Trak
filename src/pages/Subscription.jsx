@@ -1,19 +1,36 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock, CreditCard, Sparkles } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
+import { CheckCircle2, Clock, CreditCard, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function Subscription() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [searchParams] = useSearchParams();
+  const paymentSuccess = searchParams.get('success') === 'true';
+  const paymentCancelled = searchParams.get('cancelled') === 'true';
 
   useEffect(() => {
     loadUser();
   }, []);
+
+  // Reload user data after successful payment to pick up webhook-updated status
+  useEffect(() => {
+    if (paymentSuccess) {
+      const poll = setInterval(async () => {
+        const u = await base44.auth.me();
+        if (u.subscription_status === 'active') {
+          setUser(u);
+          clearInterval(poll);
+        }
+      }, 2000);
+      setTimeout(() => clearInterval(poll), 30000);
+    }
+  }, [paymentSuccess]);
 
   const loadUser = async () => {
     try {
@@ -37,20 +54,15 @@ export default function Subscription() {
   const handleSubscribe = async () => {
     setProcessingPayment(true);
     try {
-      // In a real implementation, you would:
-      // 1. Create a Stripe checkout session via a backend function
-      // 2. Redirect to Stripe checkout
-      // 3. Handle webhook to update subscription_status
-      
-      // For now, we'll simulate activation
-      alert('Stripe integration required. Please contact support to activate your subscription.');
-      
-      // Temporary: Mark as active for demo purposes
-      // await base44.auth.updateMe({ subscription_status: 'active' });
-      // window.location.href = createPageUrl('Dashboard');
+      const response = await base44.functions.invoke('createCheckoutSession', {
+        success_url: `${window.location.origin}/Subscription?success=true`,
+        cancel_url: `${window.location.origin}/Subscription?cancelled=true`,
+      });
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
     } finally {
       setProcessingPayment(false);
     }
@@ -72,6 +84,19 @@ export default function Subscription() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
+        {paymentSuccess && (
+          <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <p className="text-emerald-800 font-medium">Payment successful! Activating your subscription…</p>
+          </div>
+        )}
+        {paymentCancelled && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <p className="text-amber-800 font-medium">Payment cancelled. You can try again below.</p>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 mb-4">
             <Sparkles className="w-8 h-8 text-white" />
