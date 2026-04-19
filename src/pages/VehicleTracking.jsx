@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Search, Filter, Download, Car, TrendingUp, Navigation } from 'lucide-react';
+import { Plus, Search, Filter, Download, Car, TrendingUp, Navigation, Satellite } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import TripForm from '../components/vehicle/TripForm';
+import LiveTripTracker from '../components/vehicle/LiveTripTracker';
 import TripTable from '../components/vehicle/TripTable';
 import VehicleManager from '../components/vehicle/VehicleManager';
 import StatsCard from '../components/dashboard/StatsCard';
@@ -30,12 +31,18 @@ export default function VehicleTracking() {
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear().toString());
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState(null);
+  const [showTracker, setShowTracker] = useState(false);
   
   const queryClient = useQueryClient();
 
   const { data: trips = [], isLoading } = useQuery({
     queryKey: ['trips'],
     queryFn: () => base44.entities.Trip.list('-date', 500)
+  });
+
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['vehicles'],
+    queryFn: () => base44.entities.Vehicle.filter({ is_active: true })
   });
 
   const createMutation = useMutation({
@@ -135,6 +142,15 @@ export default function VehicleTracking() {
     }
   };
 
+  // Called when Live Tracker finishes — pre-fill the form with GPS data
+  const handleGPSTripComplete = (gpsData) => {
+    setShowTracker(false);
+    setEditingTrip(null);
+    // Open form pre-filled with GPS data so user can add purpose/notes before saving
+    setEditingTrip(gpsData);
+    setIsFormOpen(true);
+  };
+
   const handleExport = () => {
     const csvContent = [
       ['Date', 'From', 'To', 'Start Odometer', 'End Odometer', 'Purpose', 'Category', 'Distance (km)', 'Deductible'].join(','),
@@ -188,10 +204,18 @@ export default function VehicleTracking() {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Vehicle & Mileage</h1>
           <p className="text-slate-500 mt-2">Track your vehicle trips for tax deductions</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <Button variant="outline" onClick={handleExport}>
             <Download className="w-4 h-4 mr-2" />
             Export
+          </Button>
+          <Button
+            variant={showTracker ? "default" : "outline"}
+            className={showTracker ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600" : "border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950"}
+            onClick={() => setShowTracker(v => !v)}
+          >
+            <Satellite className="w-4 h-4 mr-2" />
+            {showTracker ? 'Hide Tracker' : 'Track Live Trip'}
           </Button>
           <Button 
             className="bg-slate-900 hover:bg-slate-800"
@@ -202,6 +226,14 @@ export default function VehicleTracking() {
           </Button>
         </div>
       </div>
+
+      {/* Live GPS Tracker Panel */}
+      {showTracker && (
+        <LiveTripTracker
+          vehicles={vehicles}
+          onTripComplete={handleGPSTripComplete}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
