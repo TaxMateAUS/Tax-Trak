@@ -86,3 +86,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Minimum 44×44px touch targets on mobile for all interactive elements */
+@media (max-width: 1023px) {
+  button,
+  [role="button"],
+  a,
+  select,
+  [data-radix-collection-item],
+  [data-radix-dropdown-menu-item],
+  [data-radix-select-item],
+  [data-radix-context-menu-item] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

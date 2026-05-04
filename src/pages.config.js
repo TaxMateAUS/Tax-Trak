@@ -47,16 +47,17 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Dashboard from './pages/Dashboard';
-import Expenses from './pages/Expenses';
-import ScanReceipt from './pages/ScanReceipt';
-import Subscription from './pages/Subscription';
-import TaxSummary from './pages/TaxSummary';
-import VehicleTracking from './pages/VehicleTracking';
-import DiaryEntries from './pages/DiaryEntries';
-import TaxReports from './pages/TaxReports';
+import { lazy } from 'react';
 import __Layout from './Layout.jsx';
 
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Expenses = lazy(() => import('./pages/Expenses'));
+const ScanReceipt = lazy(() => import('./pages/ScanReceipt'));
+const Subscription = lazy(() => import('./pages/Subscription'));
+const TaxSummary = lazy(() => import('./pages/TaxSummary'));
+const VehicleTracking = lazy(() => import('./pages/VehicleTracking'));
+const DiaryEntries = lazy(() => import('./pages/DiaryEntries'));
+const TaxReports = lazy(() => import('./pages/TaxReports'));
 
 export const PAGES = {
     "Dashboard": Dashboard,
