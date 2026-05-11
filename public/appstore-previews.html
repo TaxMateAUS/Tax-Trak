@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TaxTracker – App Store Previews</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #111;
+    color: #fff;
+    padding: 40px 24px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 10px; }
+  .note {
+    background: #1e1e1e;
+    border: 1px solid #2e2e2e;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 780px;
+  }
+  .note strong { color: #fff; }
+  .btn-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: #0a84ff;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 40px;
+    transition: background .2s;
+  }
+  .btn-all:hover { background: #007aeb; }
+  .assets-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 420px;
+  }
+  .asset-card {
+    background: #1a1a1a;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+  }
+  .canvas-wrap {
+    width: 100%;
+    aspect-ratio: 9 / 19.5;
+    position: relative;
+    background: #000;
+    overflow: hidden;
+  }
+  .canvas-wrap.landscape { aspect-ratio: 19.5 / 9; }
+  .canvas-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+  .card-footer {
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-meta { flex: 1; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .card-size { font-size: 12px; color: #666; }
+  .btn-dl {
+    padding: 9px 18px;
+    background: #0a84ff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s;
+  }
+  .btn-dl:hover { background: #007aeb; }
+  .btn-dl:disabled { background: #2e2e2e; color: #555; cursor: default; }
+  .status { font-size: 11px; color: #555; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1>TaxTracker — App Store Previews</h1>
+<p class="subtitle">3 preview images ready for App Store Connect upload</p>
+
+<div class="note">
+  <strong>Instructions:</strong> Click <em>Download</em> next to each preview, or <em>Download All 3</em> to save everything at once.
+  Upload the downloaded PNG files to <strong>App Store Connect → Your App → Screenshots</strong>.
+  Apple accepts: <strong>1242×2688px</strong>, <strong>2688×1242px</strong>, <strong>1284×2778px</strong>.
+</div>
+
+<button class="btn-all" onclick="downloadAll()">⬇ Download All 3</button>
+
+<div class="assets-grid" id="grid"></div>
+
+<script>
+// ── Screen images from your real app captures ──────────────────────────────
+const SCREENS = {
+  dashboard: 'https://media.base44.com/images/public/696376c210ed2a7dd77824b7/024982add_generated_image.png',
+  expenses:  'https://media.base44.com/images/public/696376c210ed2a7dd77824b7/a260718ca_generated_image.png',
+  scan:      'https://media.base44.com/images/public/696376c210ed2a7dd77824b7/656d0263d_generated_image.png',
+  vehicle:   'https://media.base44.com/images/public/696376c210ed2a7dd77824b7/cdc7f6e4a_generated_image.png',
+  reports:   'https://media.base44.com/images/public/696376c210ed2a7dd77824b7/634bdbc49_generated_image.png',
+};
+
+// ── 3 preview definitions ──────────────────────────────────────────────────
+const ASSETS = [
+  {
+    id: 'a1',
+    title: 'Preview 1 — Dashboard (Portrait)',
+    screen: 'dashboard',
+    headline: 'Track Every Deduction',
+    sub: 'Your complete tax dashboard',
+    w: 1242, h: 2688,
+    filename: 'taxtracker-preview-1242x2688.png',
+    landscape: false,
+  },
+  {
+    id: 'a2',
+    title: 'Preview 2 — Scan Receipt (Landscape)',
+    screen: 'scan',
+    headline: 'Scan Receipts Instantly',
+    sub: 'AI extracts your expense details automatically',
+    w: 2688, h: 1242,
+    filename: 'taxtracker-preview-2688x1242.png',
+    landscape: true,
+  },
+  {
+    id: 'a3',
+    title: 'Preview 3 — Expenses (Portrait)',
+    screen: 'expenses',
+    headline: 'Every Expense Organised',
+    sub: 'Categorise & export with one tap',
+    w: 1284, h: 2778,
+    filename: 'taxtracker-preview-1284x2778.png',
+    landscape: false,
+  },
+];
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function loadImg(url) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    // cache-bust to avoid CORS issues
+    img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  });
+}
+
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y,     x + w, y + r,     r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r,  y + h);
+  ctx.arcTo(x,  y + h, x,  y + h - r, r);
+  ctx.lineTo(x,  y + r);
+  ctx.arcTo(x,  y,     x + r, y,       r);
+  ctx.closePath();
+}
+
+function drawWrappedText(ctx, text, cx, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '';
+  for (let i = 0; i < words.length; i++) {
+    const test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > maxW && i > 0) {
+      ctx.fillText(line.trim(), cx, y);
+      line = words[i] + ' ';
+      y += lineH;
+    } else { line = test; }
+  }
+  ctx.fillText(line.trim(), cx, y);
+}
+
+// ── Draw phone mockup with screenshot inside ───────────────────────────────
+function drawPhone(ctx, img, px, py, pw, ph) {
+  const r = pw * 0.09;
+
+  // Shadow
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.65)';
+  ctx.shadowBlur   = pw * 0.14;
+  ctx.shadowOffsetY = pw * 0.07;
+  rrect(ctx, px, py, pw, ph, r);
+  ctx.fillStyle = '#1c1c1e';
+  ctx.fill();
+  ctx.restore();
+
+  // Outer bezel
+  ctx.save();
+  rrect(ctx, px, py, pw, ph, r);
+  ctx.fillStyle = '#1c1c1e';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = pw * 0.016;
+  ctx.stroke();
+  ctx.restore();
+
+  // Screen area
+  const sx = px + pw * 0.04;
+  const sy = py + pw * 0.08;
+  const sw = pw * 0.92;
+  const sh = ph - pw * 0.14;
+  const sr = r * 0.6;
+
+  ctx.save();
+  rrect(ctx, sx, sy, sw, sh, sr);
+  ctx.clip();
+  if (img) {
+    // cover-fit
+    const ia = img.width / img.height;
+    const sa = sw / sh;
+    let dw, dh, dx, dy;
+    if (ia > sa) { dh = sh; dw = dh * ia; dx = sx + (sw - dw) / 2; dy = sy; }
+    else         { dw = sw; dh = dw / ia; dx = sx; dy = sy + (sh - dh) / 2; }
+    ctx.drawImage(img, dx, dy, dw, dh);
+  } else {
+    ctx.fillStyle = '#f2f2f7';
+    ctx.fillRect(sx, sy, sw, sh);
+  }
+  ctx.restore();
+
+  // Dynamic Island
+  ctx.save();
+  ctx.fillStyle = '#000';
+  const diW = pw * 0.26, diH = pw * 0.038;
+  rrect(ctx, px + pw / 2 - diW / 2, py + pw * 0.025, diW, diH, diH / 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── Main render per asset ──────────────────────────────────────────────────
+async function renderAsset(def, canvas) {
+  const { w, h, screen, headline, sub, landscape } = def;
+  canvas.width  = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, landscape ? w : 0, landscape ? 0 : h);
+  bg.addColorStop(0, '#0d0d0d');
+  bg.addColorStop(1, '#1a1a2e');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle radial glow
+  const glow = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.6);
+  glow.addColorStop(0, 'rgba(10,132,255,0.08)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, w, h);
+
+  const screenImg = await loadImg(SCREENS[screen]);
+
+  if (landscape) {
+    // ── Landscape layout ─────────────────────────────────────────────────
+    const ph = h * 0.80;
+    const pw = ph * 0.47;
+    const px = w * 0.52;
+    const py = (h - ph) / 2;
+
+    drawPhone(ctx, screenImg, px, py, pw, ph);
+
+    // Text block left
+    const tx = w * 0.07;
+
+    // Logo pill
+    ctx.save();
+    rrect(ctx, tx, h * 0.20, h * 0.09, h * 0.09, h * 0.02);
+    ctx.fillStyle = '#1c1c1e';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = h * 0.005;
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${h * 0.055}px -apple-system`;
+    ctx.textAlign = 'center';
+    ctx.fillText('$', tx + h * 0.045, h * 0.265);
+
+    // App name
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#aaa';
+    ctx.font = `600 ${h * 0.042}px -apple-system`;
+    ctx.fillText('TaxTracker', tx + h * 0.115, h * 0.265);
+
+    // Headline
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${h * 0.10}px -apple-system`;
+    drawWrappedText(ctx, headline, tx, h * 0.42, w * 0.40, h * 0.115);
+
+    // Sub
+    ctx.fillStyle = '#8e8e93';
+    ctx.font = `${h * 0.056}px -apple-system`;
+    drawWrappedText(ctx, sub, tx, h * 0.70, w * 0.40, h * 0.068);
+
+  } else {
+    // ── Portrait layout ──────────────────────────────────────────────────
+    const pw = w * 0.76;
+    const ph = pw / 0.47;
+    const px = (w - pw) / 2;
+    const py = h * 0.20;
+
+    drawPhone(ctx, screenImg, px, py, pw, ph);
+
+    // Top branding
+    ctx.textAlign = 'center';
+
+    // Logo mark
+    const ls = w * 0.11;
+    const lx = w / 2 - ls / 2;
+    const ly = h * 0.04;
+    ctx.save();
+    rrect(ctx, lx, ly, ls, ls, ls * 0.22);
+    ctx.fillStyle = '#1c1c1e';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = ls * 0.04;
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${ls * 0.55}px -apple-system`;
+    ctx.fillText('$', w / 2, ly + ls * 0.70);
+
+    // App name under logo
+    ctx.fillStyle = '#8e8e93';
+    ctx.font = `600 ${w * 0.045}px -apple-system`;
+    ctx.fillText('TaxTracker', w / 2, ly + ls + w * 0.055);
+
+    // Headline above phone
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${w * 0.082}px -apple-system`;
+    drawWrappedText(ctx, headline, w / 2, h * 0.145, w * 0.88, w * 0.095);
+
+    // Sub below phone
+    const bottomY = py + ph + h * 0.03;
+    ctx.fillStyle = '#8e8e93';
+    ctx.font = `${w * 0.048}px -apple-system`;
+    drawWrappedText(ctx, sub, w / 2, bottomY, w * 0.80, w * 0.058);
+
+    ctx.textAlign = 'left';
+  }
+}
+
+// ── Build UI cards ─────────────────────────────────────────────────────────
+const grid = document.getElementById('grid');
+const allCanvases = [];
+
+ASSETS.forEach(def => {
+  const card = document.createElement('div');
+  card.className = 'asset-card';
+
+  const wrap = document.createElement('div');
+  wrap.className = def.landscape ? 'canvas-wrap landscape' : 'canvas-wrap';
+
+  const canvas = document.createElement('canvas');
+  wrap.appendChild(canvas);
+  card.appendChild(wrap);
+
+  const footer = document.createElement('div');
+  footer.className = 'card-footer';
+  footer.innerHTML = `
+    <div class="card-meta">
+      <div class="card-title">${def.title}</div>
+      <div class="card-size">${def.w} × ${def.h} px</div>
+      <div class="status" id="status-${def.id}">Rendering…</div>
+    </div>
+    <button class="btn-dl" id="btn-${def.id}" disabled>Download</button>
+  `;
+  card.appendChild(footer);
+  grid.appendChild(card);
+
+  renderAsset(def, canvas).then(() => {
+    document.getElementById('status-' + def.id).textContent = 'Ready ✓';
+    const btn = document.getElementById('btn-' + def.id);
+    btn.disabled = false;
+    btn.onclick = () => triggerDownload(canvas, def.filename);
+  });
+
+  allCanvases.push({ canvas, filename: def.filename });
+});
+
+function triggerDownload(canvas, filename) {
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+async function downloadAll() {
+  for (const { canvas, filename } of allCanvases) {
+    triggerDownload(canvas, filename);
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+</script>
+</body>
+</html>
