@@ -30,6 +30,9 @@ export default function SubscriptionCheck({ children }) {
         const trialEnd = new Date(currentUser.trial_end_date);
         const now = new Date();
         
+        // Admins always have full access
+        if (currentUser.role === 'admin') return;
+
         if (now > trialEnd && currentUser.subscription_status === 'trial') {
           await base44.auth.updateMe({ subscription_status: 'expired' });
           navigate(createPageUrl('Subscription'));
