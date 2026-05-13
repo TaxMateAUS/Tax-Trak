@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "TaxTracker",
+  "name": "Tax Trak",
   "version": "1.0.0",
   "description": "Track tax deductions, mileage, and expenses for Australian taxpayers.",
   "icons": {
