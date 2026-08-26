@@ -1,0 +1,41 @@
+{
+  "name": "DiaryEntry",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the deduction"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the deductible item"
+    },
+    "category": {
+      "type": "string",
+      "description": "Type of deduction (e.g., phone, internet, home office)"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount claimed"
+    },
+    "tax_year": {
+      "type": "number",
+      "description": "Tax year this entry belongs to"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "is_deductible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this item is tax deductible"
+    }
+  },
+  "required": [
+    "date",
+    "description",
+    "amount"
+  ]
+}

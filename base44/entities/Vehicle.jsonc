@@ -1,0 +1,34 @@
+{
+  "name": "Vehicle",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Vehicle name or identifier (e.g., 'Honda Civic', 'Company Van')"
+    },
+    "make": {
+      "type": "string",
+      "description": "Vehicle make"
+    },
+    "model": {
+      "type": "string",
+      "description": "Vehicle model"
+    },
+    "year": {
+      "type": "number",
+      "description": "Vehicle year"
+    },
+    "license_plate": {
+      "type": "string",
+      "description": "License plate number"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this vehicle is currently in use"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

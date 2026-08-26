@@ -1,0 +1,76 @@
+{
+  "name": "Trip",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the trip"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "ID of the vehicle used"
+    },
+    "vehicle_name": {
+      "type": "string",
+      "description": "Name of the vehicle (for display)"
+    },
+    "start_location": {
+      "type": "string",
+      "description": "Starting location"
+    },
+    "end_location": {
+      "type": "string",
+      "description": "Ending location"
+    },
+    "start_odometer": {
+      "type": "number",
+      "description": "Odometer reading at start (km)"
+    },
+    "end_odometer": {
+      "type": "number",
+      "description": "Odometer reading at end (km)"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Purpose of the trip"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Distance travelled in kilometres (calculated)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "business",
+        "medical",
+        "moving",
+        "charitable",
+        "other"
+      ],
+      "default": "business",
+      "description": "Type of trip for tax purposes"
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "Calculated total for reimbursement"
+    },
+    "tax_year": {
+      "type": "number",
+      "description": "Tax year this trip belongs to"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "is_deductible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this trip is tax deductible"
+    }
+  },
+  "required": [
+    "date",
+    "purpose"
+  ]
+}

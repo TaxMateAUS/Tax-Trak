@@ -1,0 +1,61 @@
+{
+  "name": "Expense",
+  "type": "object",
+  "properties": {
+    "vendor": {
+      "type": "string",
+      "description": "Name of the vendor or business"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Total amount of the expense"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the expense"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "office_supplies",
+        "travel",
+        "meals_entertainment",
+        "utilities",
+        "software_subscriptions",
+        "professional_services",
+        "insurance",
+        "vehicle",
+        "home_office",
+        "medical",
+        "education",
+        "charitable",
+        "other"
+      ],
+      "description": "Tax category for the expense"
+    },
+    "tax_year": {
+      "type": "number",
+      "description": "Tax year this expense belongs to"
+    },
+    "receipt_url": {
+      "type": "string",
+      "description": "URL of the uploaded receipt image"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the expense"
+    },
+    "is_deductible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this expense is tax deductible"
+    }
+  },
+  "required": [
+    "vendor",
+    "amount",
+    "date",
+    "category"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "trial_end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the free trial ends"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "active",
+        "expired",
+        "cancelled"
+      ],
+      "default": "trial",
+      "description": "Current subscription status"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription ID"
+    }
+  },
+  "required": [
+    "trial_end_date",
+    "stripe_customer_id",
+    "stripe_subscription_id"
+  ]
+}
